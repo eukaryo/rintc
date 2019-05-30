@@ -10,15 +10,16 @@ namespace rintdwr {
 
 void ComputationTimeExperiment1();
 void ComputationTimeExperiment2();
+void ComputationTimeExperiment3();
 void ComputationTimeExperiment4();
+void ComputationTimeExperiment5(const int W);
+
 void AccuracyExperiment1(const int num, const bool perform_non_fourier);
 void AccuracyExperiment2();
 
 void SuppMaxDistExperiment1();
 void SuppMaxDistExperiment2();
 void SuppMaxDistExperiment3();
-void AccuracyGlitchVisualization();
-
 
 int ComputeBestMaxSpan(
 	const std::string& sequence,

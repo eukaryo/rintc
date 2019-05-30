@@ -381,6 +381,7 @@ void ComputationTimeExperiment3() {
 }
 void ComputationTimeExperiment4() {
 	//S151Rfam Dataset, maxspan=10000 (i.e. without maxspan constraint)
+	//without Fourier transform
 
 	typedef WideComplexNumber<Floating> Comp;
 
@@ -438,6 +439,63 @@ void ComputationTimeExperiment4() {
 	}
 	outputfile.close();
 }
+
+void ComputationTimeExperiment5(const int W) {
+	//S151Rfam Dataset, maxspan=W
+
+	typedef WideComplexNumber<Floating> Comp;
+
+	RintX1DOptions options;
+	options.temperature = 37.0;
+	options.param_file_name = std::string("Turner2004");
+	options.max_loop = 30;
+	options.allow_fft = false;
+	const Floating gamma = Floating(1.0);
+
+	const auto dataset = ReadS151RfamDataset();
+
+	std::vector<std::string>sequences;
+	for (const auto d : dataset) {
+		sequences.push_back(d[1]);
+	}
+
+	std::vector<std::vector<int>>result;
+
+	for (int i = 0; i < int(sequences.size()); ++i) {
+		options.sequence = sequences[i];
+		const int length = int(options.sequence.size());
+		options.max_span = std::min(length, W);
+		options.allow_fft = false;
+
+		std::cout << "start" << std::endl;
+		const auto start = std::chrono::system_clock::now();
+
+		const auto bppm = SimpleMcCaskillWide(options.sequence, options.param_file_name, options.temperature, options.max_span, options.max_loop).first;
+		options.reference_structure1 = GetCentroidFoldMcCaskill(options.sequence, options.max_span, bppm, gamma, options.max_loop);
+		options.S1 = VerifyAndParseStructure(options.reference_structure1, options.sequence, options.max_span, options.max_loop);
+		options.max_dim1 = ComputeMaxHammingDistance(options.sequence, options.S1, options.max_span, options.max_loop);
+		const auto ans2 = ComputeRintW1Dim<Comp>(options);
+
+		const auto end = std::chrono::system_clock::now();
+		std::cout << "end " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " ms" << std::endl;
+
+		const int time = int(std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count());
+		std::cout << "result: S151Rfam, i = " << i
+			<< ", length = " << length
+			<< ", max_span = " << options.max_span
+			<< ", time = " << time
+			<< " ms" << std::endl;
+
+		result.push_back(std::vector<int>{length, options.max_span, time});
+	}
+
+	std::ofstream outputfile(std::string("result_S151Rfam_seq_computation_time_W")+ std::to_string(W)+ std::string(".txt"));
+	for (const auto r : result) {
+		outputfile << r[0] << " " << r[1] << " " << r[2] << std::endl;
+	}
+	outputfile.close();
+}
+
 
 void SuppMaxDistExperiment1() {
 	//max hamming distance, S151Rfam Dataset
@@ -640,52 +698,6 @@ void AccuracyExperiment2() {
 	}
 }
 
-
-void AccuracyGlitchVisualization() {
-
-	typedef WideComplexNumber<Floating> Comp;
-	const Floating gamma = Floating(1.0);
-	RintX1DOptions options;
-	options.temperature = 37.0;
-	options.param_file_name = std::string("Turner2004");
-	options.max_loop = 30;
-
-	const auto s151 = ReadS151RfamDataset();
-	options.sequence = s151[6][1];
-	options.max_span = options.sequence.size();
-
-	options.allow_fft = true;
-
-	std::cout << " 1" << std::endl;
-	const auto bppm = SimpleMcCaskillWide(options.sequence, "Turner2004", 37.0, options.max_span, options.max_loop).first;
-	std::cout << " 2" << std::endl;
-	options.reference_structure1 = GetCentroidFoldMcCaskill(options.sequence, options.max_span, bppm, gamma, options.max_loop);
-	for (int i = 0; i < options.reference_structure1.size(); ++i)options.reference_structure1[i] = '.';
-	std::cout << " 3" << std::endl;
-	options.S1 = VerifyAndParseStructure(options.reference_structure1, options.sequence, options.max_span, options.max_loop);
-	std::cout << " 4" << std::endl;
-	options.max_dim1 = ComputeMaxHammingDistance(options.sequence, options.S1, options.max_span, options.max_loop);
-	const auto ans11 = ComputeRintW1Dim<Comp>(options);
-	const auto ans21 = ComputeRintW1DimNonFourier<Comp>(options);
-	const auto ans12 = RintW1DimToBppm(ans11.first, ans11.second);
-	const auto ans22 = RintW1DimToBppm(ans21.first, ans21.second);
-
-	std::vector<std::string> represent1, represent2;
-	for (int i = 0; i <= options.max_dim1; ++i) {
-		represent1.push_back(GetCentroidFoldForEachHammingDistance(options.sequence, options.S1, options.max_dim1, options.max_span, ans12.second[i], gamma, options.max_loop, i)[0]);
-		represent2.push_back(GetCentroidFoldForEachHammingDistance(options.sequence, options.S1, options.max_dim1, options.max_span, ans22.second[i], gamma, options.max_loop, i)[0]);
-		//represent1.push_back(GetCentroidFoldMcCaskill(options.sequence, options.max_span, ans12.second[i], gamma, options.max_loop));
-		//represent2.push_back(GetCentroidFoldMcCaskill(options.sequence, options.max_span, ans22.second[i], gamma, options.max_loop));
-	}
-
-	for (int i = 0; i <= options.max_dim1; ++i) {
-		std::cout << i << std::endl << ans22.first[i] << std::endl << represent1[i] << std::endl << represent2[i] << std::endl << std::endl;
-	}
-
-	return;
-
-
-}
 
 void HeatResistanceExperiment(const std::string filename, double threshold) {
 	//CentroidFoldでリファレンス取ってHagio→取り直してMori
@@ -944,7 +956,7 @@ void HeatResistanceExperimentPK(const std::string sequencefilename, const std::s
 }
 
 void RrnaAccuracyExperiment(const std::string filename) {
-	//CentroidFoldでリファレンス取ってHagi
+	//CentroidFoldでリファレンス取ってHagio
 
 	//temp 37
 

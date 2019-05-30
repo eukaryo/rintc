@@ -145,8 +145,10 @@ std::pair<std::vector<std::string>, Bigint>SampleMcCaskillUniform(
 	};
 
 	const Bigint total = GetZ(1, n);
-	boost::random::mt19937_64 rnd(seed);
-	boost::random::uniform_int_distribution<Bigint>random_structure(Bigint(0), total - Bigint(1));
+	//boost::random::mt19937_64 rnd(seed);
+	//boost::random::uniform_int_distribution<Bigint>random_structure(Bigint(0), total - Bigint(1));
+	std::mt19937_64 rnd(seed);
+	std::uniform_int_distribution<Bigint>random_structure(Bigint(0), total - Bigint(1));
 
 	const auto GetRandomStructure = [&]() {
 
@@ -302,7 +304,7 @@ std::pair<std::vector<std::string>, Bigint>SampleMcCaskillUniform(
 		}
 		std::vector<std::vector<Bigint>>pseudo_bppm(n + 1, std::vector<Bigint>(max_span + 1, Bigint(0)));
 
-		constexpr int size__ = 100000;
+		constexpr Bigint size__ = 100000;
 		for (int x = 0; x < size__; x++) {
 			const std::string structure = GetRandomStructure();
 			const auto p = VerifyAndParseStructure(structure, sequence, max_span, max_loop);
@@ -313,7 +315,7 @@ std::pair<std::vector<std::string>, Bigint>SampleMcCaskillUniform(
 			//diff = abs(pseudo_bppm[i][j - i]/size__ - bppm[i][j - i]/total;
 			//assert(diff < 0.01);
 
-			const Bigint diff = abs(pseudo_bppm[i][j - i] * total - bppm[i][j - i] * size__);
+			const Bigint diff = std::abs<Bigint>(pseudo_bppm[i][j - i] * total - bppm[i][j - i] * size__);
 			if (diff * Bigint(100) >= total * Bigint(size__)) {
 				std::cout << std::endl;
 				std::cout << i << std::endl;

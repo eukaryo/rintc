@@ -22,13 +22,14 @@ Copyright (c) 2019 Hiroki Takizawa
 #include <chrono>
 #include <sstream>
 
-#include <boost/multiprecision/cpp_int.hpp>
+//#include <boost/multiprecision/cpp_int.hpp>
 
 #include"real_logsumexp.h"
 
 namespace rintdwr {
 
-typedef boost::multiprecision::cpp_int Bigint;
+//typedef boost::multiprecision::cpp_int Bigint;
+typedef int64_t Bigint;
 typedef WideRealNumber<double> WideFloating;
 
 std::pair<std::vector<std::string>, Bigint>SampleMcCaskillUniform(

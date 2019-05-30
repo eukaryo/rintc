@@ -63,11 +63,49 @@ int main_(int argc, char *argv[]) {
 //#endif
 
 
-	//TestAll();
-
 	if (argc == 2) {
 		if (std::string(argv[1]) == std::string("test")) {
 			TestAll();
+			return 0;
+		}
+		if (std::string(argv[1]) == std::string("ComputationTimeExperimentW100")) {
+			ComputationTimeExperiment2();
+			return 0;
+		}
+		if (std::string(argv[1]) == std::string("ComputationTimeExperimentWN")) {
+			ComputationTimeExperiment3();
+			return 0;
+		}
+		if (std::string(argv[1]) == std::string("HeatResistanceExperiment")) {
+			HeatResistanceExperiment("stability_dataset/ecoli_4v9d_ndb_aa.txt", 0.5);
+			HeatResistanceExperiment("stability_dataset/thermophilus_4v51_ndb_aa.txt", 0.5);
+			HeatResistanceExperimentPK("stability_dataset/ecoli_4v9d_ndb_aa.txt", "stability_dataset/ecoli_4v9d_ndb_aa_structure.txt", 0.5);
+			HeatResistanceExperimentPK("stability_dataset/thermophilus_4v51_ndb_aa.txt", "stability_dataset/thermophilus_4v51_ndb_aa.txt", 0.5);
+			return 0;
+		}
+		if (std::string(argv[1]) == std::string("AccuracyExperiment151")) {
+			AccuracyExperiment2();
+			return 0;
+		}
+		if (std::string(argv[1]) == std::string("RrnaAccuracyExperiment")) {
+			RrnaAccuracyExperiment("stability_dataset/ecoli_4v9d_ndb_aa.txt");
+			RrnaAccuracyExperiment("stability_dataset/thermophilus_4v51_ndb_aa.txt");
+			return 0;
+		}
+	}
+	if (argc == 4) {
+		if (std::string(argv[1]) == std::string("ComputationTimeExperimentWvar")) {
+			const int i = std::stoi(std::string(argv[2]));
+			const int j = std::stoi(std::string(argv[3]));
+			omp_set_num_threads(std::min<int>(j, omp_get_max_threads()));
+			switch (i) {
+			case 6: ComputationTimeExperiment5(50); return 0;
+			case 5: ComputationTimeExperiment5(100); return 0;
+			case 4: ComputationTimeExperiment5(200); return 0;
+			case 3: ComputationTimeExperiment5(300); return 0;
+			case 2: ComputationTimeExperiment5(400); return 0;
+			case 1: ComputationTimeExperiment5(10000); return 0;
+			}
 			return 0;
 		}
 	}

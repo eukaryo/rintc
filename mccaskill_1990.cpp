@@ -233,6 +233,8 @@ template<typename RealScalar>std::pair<std::vector<std::vector<RealScalar>>, Rea
 	auto bppm = std::vector<std::vector<RealScalar>>(n + 1, std::vector<RealScalar>(max_span + 1, RealScalar(0.0)));
 	for (int i = 1; i <= n; ++i)for (int j = i; j <= n && j - i <= max_span; ++j) {
 		bppm[i][j - i] = GetZb(i, j) * GetWb(i, j) / GetZ(1, n);
+		if (bppm[i][j - i] < 0.0)bppm[i][j - i] = 0.0;
+		if (bppm[i][j - i] > 1.0)bppm[i][j - i] = 1.0;
 	}
 
 	return std::make_pair(bppm, GetZ(1, n));
@@ -443,6 +445,8 @@ std::pair<std::vector<std::vector<Floating>>, Floating>SimpleMcCaskillWide(
 	auto bppm = std::vector<std::vector<Floating>>(n + 1, std::vector<Floating>(max_span + 1, Floating(0.0)));
 	for (int i = 1; i <= n; ++i)for (int j = i; j <= n && j - i <= max_span; ++j) {
 		bppm[i][j - i] = (GetZb(i, j) * GetWb(i, j) / GetZ(1, n)).ToUsualReal();
+		if (bppm[i][j - i] < 0.0)bppm[i][j - i] = 0.0;
+		if (bppm[i][j - i] > 1.0)bppm[i][j - i] = 1.0;
 	}
 
 	return std::make_pair(bppm, GetZ(1, n).log_scale);
