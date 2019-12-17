@@ -8,7 +8,7 @@ gcc/7.2.0 on CentOS Linux release 7.5.1804
 
 then,
 
-$ ./rintc <rna> <str> <W> <algo>
+$ ./rintc \<rna\> \<str\> \<W\> \<algo\>
 
 where
 
