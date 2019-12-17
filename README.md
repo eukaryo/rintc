@@ -4,9 +4,9 @@ $ make
 
 to compile the source and obtain the executable "rintc". I succeed to compile them in the following environment:
 
-gcc/7.2.0 on CentOS Linux release 7.5.1804
+gcc/7.2.0 on CentOS Linux release 7.5.1804 .
 
-then,
+then, 
 
 $ ./rintc \<rna\> \<str\> \<W\> \<algo\>
 
