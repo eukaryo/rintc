@@ -27,3 +27,12 @@ For other algos and replicating the experiments, see main.cpp.
 example:
 
 ./rintc CCCCAAAAGGGG "((((....))))" 12 RintCwithDFT
+
+# How to reproduce
+For reproduce the experiments perfomed in the paper, use the commands below:
+
+$ ./rintc \<ComputationTimeExperimentW100\>
+$ ./rintc \<ComputationTimeExperimentWN\>
+$ ./rintc \<HeatResistanceExperiment\>
+$ ./rintc \<AccuracyExperiment151\>
+$ ./rintc \<RrnaAccuracyExperiment\>
