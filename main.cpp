@@ -306,6 +306,8 @@ int main_(int argc, char *argv[]) {
 		return 1;
 	}
 
+	std::cout << "Error" << std::endl;
+	return 1;
 
 
 }
