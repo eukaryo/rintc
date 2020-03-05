@@ -302,10 +302,11 @@ int main_(int argc, char *argv[]) {
 			}
 			return 0;
 		}
+		std::cout << "Error: invalid algo." << std::endl;
+		return 1;
 	}
 
-	std::cout << "Error: invalid algo." << std::endl;
-	return 1;
+
 
 }
 
