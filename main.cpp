@@ -1,4 +1,4 @@
-﻿/*
+/*
 GNU GPL v2
 Copyright (c) 2019 Hiroki Takizawa
 */
@@ -34,7 +34,7 @@ Copyright (c) 2019 Hiroki Takizawa
 #include"centroid_fold.h"
 
 #ifdef _WIN64 
-    #include<windows.h>
+#include<windows.h>
 #endif
 
 namespace rintdwr {
@@ -54,6 +54,92 @@ void TestAll() {
 	TestHagioNonFourier(num);
 	TestMaxHammingPK(num);
 	TestRintD1DimPK(num);
+}
+
+int verification(const std::string& structure, const std::string& sequence, const int max_span, const int max_loop) {
+
+	for (const char c : sequence) {
+		if (!(c == 'A' || c == 'U' || c == 'G' || c == 'C')) {
+			std::cerr << "Error: The RNA sequence must be uppercase." << std::endl;
+			return 1;
+		}
+	}
+	for (const char c : structure) {
+		if (!(c == '(' || c == '.' || c == ')')) {
+			std::cerr << "Error: The RNA structure must consist of '(', '.' and ')' only." << std::endl;
+			return 1;
+		}
+	}
+	if (!(structure.size() == sequence.size())) {
+		std::cerr << "Error: The RNA sequence and structure must be the same length." << std::endl;
+		std::cerr << "Your sequence length  = " + std::to_string(sequence.size()) << std::endl;
+		std::cerr << "Your structure length = " + std::to_string(structure.size()) << std::endl;
+		return 1;
+	}
+	if (!(1 <= max_span)) {
+		std::cerr << "Error: The value of max-span constraint must be a positive integer." << std::endl;
+		return 1;
+	}
+	if (!(max_span <= int(structure.size()))) {
+		std::cerr << "Error: The value of max-span constraint must be less than or equal to the length of the RNA sequence." << std::endl;
+		std::cerr << "Your sequence length  = " + std::to_string(sequence.size()) << std::endl;
+		std::cerr << "Your constraint value = " + std::to_string(max_span) << std::endl;
+		return 1;
+	}
+
+	{
+		const int n = int(sequence.size());
+		const std::string bp = "AU UA GC CG GU UG";
+		std::string query = "XX";
+		std::vector<std::vector<int>>ans(n + 1, std::vector<int>(n + 1, 0));
+		std::stack<int> bp_pos;
+		for (int i = 1; i <= n; ++i) {
+			switch (structure[i - 1]) {
+			case '(':
+				bp_pos.push(i);
+				break;
+			case ')':
+				if (!(bp_pos.size() >= 1)) {
+					std::cerr << "Error: The RNA structure is invalid." << std::endl;
+					std::cerr << "')' of position " + std::to_string(i) + " cannot form a base pair." << std::endl;
+					return 1;
+				}
+				if (!(TURN < (i - bp_pos.top()) && (i - bp_pos.top()) <= max_span)) {
+					std::cerr << "Error: The RNA structure contains the base pair whose length is longer than the max-span constraint." << std::endl;
+					return 1;
+				}
+
+				query[0] = sequence[bp_pos.top() - 1];
+				query[1] = sequence[i - 1];
+				if (!(bp.find(query) != std::string::npos)) {
+					std::cerr << "Error: The RNA structure contains an illegal base pair." << std::endl;
+					std::cerr << "Position " + std::to_string(bp_pos.top()) + " (the base is '" + query.substr(0, 1) + "') and" << std::endl;
+					std::cerr << "position " + std::to_string(i) + " (the base is '" + query.substr(1, 1) + "') " << std::endl;
+					return 1;
+				}
+
+
+				ans[bp_pos.top()][i] = 1;
+				bp_pos.pop();
+				break;
+			case '.':
+				break;
+			default:
+				assert(0);
+				break;
+			}
+		}
+		if (!(bp_pos.size() == 0)) {
+			std::cerr << "Error: The RNA structure is invalid." << std::endl;
+			std::cerr << "'(' is more than ')'." << std::endl;
+			return 1;
+		}
+		if (!(ComputeMaxLoop(structure) <= max_loop)) {
+			std::cerr << "Error: The RNA structure contains the base pair whose length is longer than the max-loop constraint." << std::endl;
+			return 1;
+		}
+	}
+	return 0;
 }
 
 int main_(int argc, char *argv[]) {
@@ -115,13 +201,18 @@ int main_(int argc, char *argv[]) {
 		const std::string structure = std::string(argv[2]);
 		const int W = std::stoi(std::string(argv[3]));
 		const std::string algo = std::string(argv[4]);
+		const int n = sequence.length();
+		const int max_loop = n < 30 ? n : 30;
+
+		if (verification(structure, sequence, W, max_loop)) {
+			return 1;
+		}
 
 		RintX1DOptions options;
 		options.temperature = 37.0;
 		options.param_file_name = std::string("Turner2004");
-		const int n = sequence.length();
 		options.max_span = W;
-		options.max_loop = n < 30 ? n : 30;
+		options.max_loop = max_loop;
 		options.sequence = sequence;
 		options.reference_structure1 = structure;
 		options.S1 = VerifyAndParseStructure(options.reference_structure1, options.sequence, options.max_span, options.max_loop);
@@ -213,8 +304,8 @@ int main_(int argc, char *argv[]) {
 		}
 	}
 
-	std::cout << "error" << std::endl;
-	return 0;
+	std::cout << "Error: invalid algo." << std::endl;
+	return 1;
 
 }
 
@@ -224,9 +315,6 @@ int main_(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
 
-	rintdwr::main_(argc, argv);
+	return rintdwr::main_(argc, argv);
 
-
-
-	return 0;
 }
